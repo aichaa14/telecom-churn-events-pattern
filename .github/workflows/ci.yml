@@ -1,0 +1,46 @@
+# .github/workflows/ci.yml
+name: CI - Tests Events Pattern
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: windows-latest   # cohérent avec ton environnement de dev (venv Windows)
+    # runs-on: ubuntu-latest  # alternative plus rapide/moins chère si le code est cross-platform
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # version compatible PySpark, évite le bug distutils rencontré en 3.12/3.14
+          cache: "pip"
+
+      - name: Installation de Java (requis par PySpark)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Installation des dépendances
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Exécution du pipeline de preprocessing
+        run: python src/02_preprocessing.py
+        # Génère output/parquet/train_fe, val_fe, test_fe
+        # nécessaires aux tests -- voir remarque ci-dessous
+
+      - name: Exécution des tests
+        run: pytest src/07_tests.py -v --tb=short
+
+      - name: Résumé des résultats
+        if: always()
+        run: echo "Tests terminés -- voir les logs ci-dessus pour le détail"
