@@ -129,15 +129,15 @@ class TestPreprocessing:
         assert total > 0
 
     def test_features_normalisees(self, train_df):
-        """Les colonnes brutes doivent avoir des valeurs numériques cohérentes (non nulles)."""
+        """Les colonnes brutes doivent être numériques, non constantes et sans NaN."""
         base_cols = [
-        "Account Length", "Day Mins", "Eve Mins",
-        "Night Mins", "Intl Mins", "CustServ Calls"
-        ]
+            "Account Length", "Day Mins", "Eve Mins",
+            "Night Mins", "Intl Mins", "CustServ Calls"
+            ]
         for col in base_cols:
-            assert train_df[col].std() > 0,    f"{col} : colonne constante"
+            assert train_df[col].std() > 0, f"{col} : colonne constante"
             assert not train_df[col].isnull().any(), f"{col} : contient des NaN"
-            assert train_df[col].mean() > 0,   f"{col} : moyenne négative inattendue"
+            assert train_df[col].mean() > 0, f"{col} : moyenne négative inattendue"
 
     def test_split_ratio_approximatif(self, train_df, val_df, test_df):
         """Le train doit représenter environ 70% du total."""
